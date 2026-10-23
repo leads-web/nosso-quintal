@@ -31,12 +31,11 @@
       <span class="sr">Menu</span><span class="bars" aria-hidden="true"></span>
     </button>
     <nav id="nav" class="nav" aria-label="Principal">
-      <a href="#espaco">O espaço</a>
-      <a href="#eventos">Eventos</a>
-      <a href="#ingressos">Ingressos</a>
-      <a href="#cardapios">Cardápios</a>
+      <a href="#topo">Início</a>
+      <a href="#proximo">Próximo evento</a>
+      <a href="#cardapios">Cardápio</a>
       <a href="#contato">Contato</a>
-      <a class="btn btn-sm" href="#eventos">Ver eventos</a>
+      <a class="btn btn-sm" href="#proximo">Ingressos</a>
     </nav>
   </header>
 
@@ -51,8 +50,8 @@
       <div class="hero-inner">
         <h1>Música, amigos e <span>boas histórias.</span></h1>
         <div class="hero-cta">
-          <a class="btn" href="#eventos">Ver eventos</a>
-          <a class="btn btn-ghost" href="#cardapios">Ver cardápios</a>
+          <a class="btn" href="#proximo">Próximo evento</a>
+          <a class="btn btn-ghost" href="#cardapios">Ver cardápio</a>
         </div>
       </div>
       <img class="hero-logo" src="assets/img/logo.png" alt="" width="240" height="240" aria-hidden="true">
@@ -69,8 +68,18 @@
       </div>
     </section>
 
+    <!-- PRÓXIMO EVENTO (dados em js/config.js, evento com featured: true) -->
+    <section class="section wood" id="proximo" aria-labelledby="t-proximo" hidden>
+      <div class="wrap">
+        <header class="sec-head reveal">
+          <h2 id="t-proximo">Próximo evento</h2>
+        </header>
+        <div class="next" id="next"></div>
+      </div>
+    </section>
+
     <!-- EVENTOS -->
-    <section class="section paper" id="eventos" aria-labelledby="t-eventos">
+    <section class="section paper" id="eventos" hidden aria-labelledby="t-eventos">
       <div class="wrap">
         <header class="sec-head reveal">
           <h2 id="t-eventos">Eventos</h2>
@@ -81,7 +90,7 @@
     </section>
 
     <!-- INGRESSOS -->
-    <section class="section wood" id="ingressos" aria-labelledby="t-ingressos">
+    <section class="section dark" id="ingressos" aria-labelledby="t-ingressos">
       <div class="wrap tickets">
         <header class="sec-head reveal">
           <h2 id="t-ingressos">Ingressos</h2>
@@ -95,7 +104,7 @@
     <section class="section dark" id="cardapios" aria-labelledby="t-cardapios">
       <div class="wrap">
         <header class="sec-head reveal">
-          <h2 id="t-cardapios">Cardápios</h2>
+          <h2 id="t-cardapios">Cardápio</h2>
         </header>
         <div id="menus"></div>
       </div>
@@ -116,7 +125,7 @@
     <div class="wrap foot">
       <img src="assets/img/logo.png" alt="Nosso Quintal" width="72" height="72" loading="lazy">
       <nav aria-label="Rodapé">
-        <a href="#espaco">O espaço</a><a href="#eventos">Eventos</a><a href="#ingressos">Ingressos</a><a href="#cardapios">Cardápios</a><a href="#contato">Contato</a>
+        <a href="#proximo">Próximo evento</a><a href="#ingressos">Ingressos</a><a href="#cardapios">Cardápio</a><a href="#contato">Contato</a>
       </nav>
       <div class="foot-social" id="footSocial"></div>
       <p class="foot-legal">© <span id="year">2026</span> Nosso Quintal. Todos os direitos reservados.</p>
