@@ -59,12 +59,58 @@
   }
 
   /* Eventos */
-  var evBox = $('#events'), evs = (C.events || []).slice().sort(function (a, b) { return new Date(a.date) - new Date(b.date); });
+  var evBox = $('#events'), allEvs = (C.events || []).slice().sort(function (a, b) { return new Date(a.date) - new Date(b.date); });
+  var featured = allEvs.filter(function (e) { return e.featured; })[0], evs = allEvs.filter(function (e) { return !e.featured; });
   var defUrl = safeUrl(C.tickets && C.tickets.defaultUrl), label = (C.tickets && C.tickets.buttonLabel) || 'Comprar ingressos';
   function emptyBox(title, text) { return h('div', { 'class': 'empty' }, [h('strong', { text: title }), h('p', { text: text })]); }
-  if (!evs.length) {
-    evBox.appendChild(emptyBox('Novos eventos em breve', 'A programação oficial será publicada aqui.'));
+  var CT = C.contact || {};
+  function waHref(num, text) {
+    var d = (num || '').replace(/\D/g, ''); if (!d) return '';
+    if (d.length <= 11) d = '55' + d;
+    return 'https://wa.me/' + d + (text ? '?text=' + encodeURIComponent(text) : '');
   }
+  function fmtTime(d) { return d.getHours() + 'h' + (d.getMinutes() ? String(d.getMinutes()).padStart(2, '0') : ''); }
+  function fmtDay(d) { return d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }); }
+  function cap(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+  /* Botão de compra: link do evento > link geral > WhatsApp de reservas > indisponível */
+  function buyBtn(e, cls) {
+    var u = safeUrl(e.ticketUrl) || defUrl;
+    if (u) return extLink(u, label, cls);
+    var d = e.date ? new Date(e.date) : null;
+    var msg = 'Olá! Quero reservar ingressos para o evento do Nosso Quintal' + (d && !isNaN(d) ? ' de ' + fmtDay(d) + ', às ' + fmtTime(d) : '') + '.';
+    var w = waHref(CT.whatsapp, msg);
+    if (w) return extLink(w, 'Reservar pelo WhatsApp', cls);
+    return h('span', { 'class': 'btn', 'aria-disabled': 'true', text: 'Ingressos em breve' });
+  }
+
+  /* Próximo evento (destaque) */
+  if (featured) {
+    var fd = new Date(featured.date), fok = !isNaN(fd);
+    var list = function (t, arr, note) {
+      return arr && arr.length ? h('div', { 'class': 'blk' }, [h('h4', { text: t }), h('p', { text: arr.join(' · ') }), note ? h('p', { 'class': 'note', text: note }) : null]) : null;
+    };
+    var prices = (featured.prices || []).map(function (p) {
+      return h('div', { 'class': 'price-box' }, [h('span', { text: p.label }), h('strong', { text: p.value })]);
+    });
+    var phones = [CT.whatsapp, CT.whatsapp2].filter(Boolean).map(function (n, i) { return extLink(waHref(n), n); });
+    var info = h('div', { 'class': 'next-info' }, [
+      fok ? h('p', { 'class': 'next-when', text: cap(fmtDay(fd)) + ' · ' + fmtTime(fd) }) : null,
+      prices.length ? h('div', { 'class': 'blk' }, [h('h4', { text: 'Ingressos' }), h('div', { 'class': 'prices' }, prices)]) : null,
+      list('Atrações', featured.attractions, featured.attractionsNote),
+      list('Na casa', featured.highlights),
+      featured.address ? h('div', { 'class': 'blk' }, [h('h4', { text: 'Onde' }), CT.mapsUrl && safeUrl(CT.mapsUrl) ? extLink(CT.mapsUrl, featured.address) : h('p', { text: featured.address })]) : null,
+      h('div', { 'class': 'hero-cta' }, [buyBtn(featured, 'btn'), h('a', { 'class': 'btn btn-ghost', href: '#cardapios', text: 'Ver cardápio' })]),
+      phones.length ? h('p', { 'class': 'note reserve' }, [document.createTextNode('Reservas e informações: ')].concat(phones.reduce(function (a, n, i) { if (i) a.push(document.createTextNode(' · ')); a.push(n); return a; }, []))) : null
+    ]);
+    var fly = featured.flyer ? h('a', { 'class': 'flyer', href: featured.flyer, target: '_blank', rel: 'noopener', 'aria-label': 'Abrir o flyer em tamanho grande' }, [h('img', { src: featured.flyer, alt: featured.flyerAlt || 'Flyer do evento', width: 720, height: 878, loading: 'lazy' })]) : null;
+    $('#next').appendChild(h('div', { 'class': 'next-grid reveal' }, [fly, info]));
+    $('#proximo').hidden = false;
+  }
+
+  if (!allEvs.length) {
+    $('#eventos').hidden = false;
+    evBox.appendChild(emptyBox('Novos eventos em breve', 'A programação oficial será publicada aqui.'));
+  } else if (evs.length) { $('#eventos').hidden = false; }
   evs.forEach(function (e) {
     var d = e.date ? new Date(e.date) : null, ok = d && !isNaN(d);
     var media = h('div', { 'class': 'card-media' }, [
@@ -73,14 +119,13 @@
       ok ? h('div', { 'class': 'date' }, [h('b', { text: String(d.getDate()) }), h('small', { text: d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '').toUpperCase() })]) : null,
       e.demo ? h('span', { 'class': 'tag', text: 'Exemplo' }) : null
     ]);
-    var url = safeUrl(e.ticketUrl) || defUrl;
     var when = ok ? d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }) + (e.date.indexOf('T') > -1 ? ' às ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '') : '';
     var body = h('div', { 'class': 'card-body' }, [
       h('h3', { text: e.title }),
       when ? h('p', { 'class': 'when', text: when }) : null,
       e.description ? h('p', { 'class': 'desc', text: e.description }) : null,
       e.price ? h('p', { 'class': 'price', text: e.price }) : null,
-      url ? extLink(url, label, 'btn') : h('span', { 'class': 'btn', 'aria-disabled': 'true', text: 'Ingressos em breve' })
+      buyBtn(e, 'btn')
     ]);
     evBox.appendChild(h('article', { 'class': 'card reveal' }, [media, body]));
   });
@@ -90,10 +135,13 @@
   if (defUrl) {
     tText.textContent = 'A compra é feita em uma plataforma externa, em nova aba.';
     tAct.appendChild(extLink(defUrl, label, 'btn'));
+  } else if (waHref(CT.whatsapp)) {
+    tText.textContent = 'Ainda não há venda online. Reserve e tire dúvidas direto pelo WhatsApp.';
+    tAct.appendChild(buyBtn(featured || {}, 'btn'));
+    tAct.appendChild(h('a', { 'class': 'btn btn-ghost', href: featured ? '#proximo' : '#eventos', text: 'Ver evento' }));
   } else {
     tText.textContent = 'A venda de ingressos será aberta em breve. Os links oficiais aparecerão aqui.';
     tAct.appendChild(h('span', { 'class': 'btn', 'aria-disabled': 'true', text: 'Ingressos em breve' }));
-    tAct.appendChild(h('a', { 'class': 'btn btn-ghost', href: '#eventos', text: 'Ver eventos' }));
   }
 
   /* Cardápios (abas acessíveis) */
@@ -146,7 +194,8 @@
   function row(t, node) { dl.appendChild(h('div', {}, [h('dt', { text: t }), h('dd', {}, [node])])); any = true; }
   if (k.address) row('Endereço', k.mapsUrl && safeUrl(k.mapsUrl) ? extLink(k.mapsUrl, k.address) : h('span', { text: k.address }));
   if (k.hours) row('Horários', h('span', { text: k.hours }));
-  if (k.whatsapp) { var w = k.whatsapp.replace(/\D/g, ''); if (w) row('WhatsApp', extLink('https://wa.me/' + w, k.whatsapp)); }
+  var wl = [k.whatsapp, k.whatsapp2].filter(function (n) { return waHref(n); });
+  if (wl.length) { var wb = h('span'); wl.forEach(function (n, i) { if (i) wb.appendChild(document.createTextNode(' · ')); wb.appendChild(extLink(waHref(n), n)); }); row('WhatsApp', wb); }
   if (k.phone) row('Telefone', h('a', { href: 'tel:' + k.phone.replace(/[^\d+]/g, ''), text: k.phone }));
   if (k.email) row('E-mail', h('a', { href: 'mailto:' + k.email, text: k.email }));
   var socials = [['Instagram', k.instagram], ['Facebook', k.facebook], ['TikTok', k.tiktok], ['YouTube', k.youtube]].filter(function (s) { return safeUrl(s[1]); });
