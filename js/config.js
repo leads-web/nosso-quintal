@@ -23,7 +23,7 @@ window.NQ_CONFIG = {
       featured: true,
       title: "Nosso Quintal",
       date: "2026-11-08T12:00",
-      flyer: "assets/img/events/flyer-2026-11-08.jpg",
+      flyer: "assets/img/events/flyer-2026-11-08.jpeg",
       flyerAlt: "Flyer do Nosso Quintal em 8 de novembro, domingo, às 12h, com as atrações, espetinhos, porções, chopp e drinks.",
       prices: [
         { label: "Homem", value: "R$ 15,00" },
